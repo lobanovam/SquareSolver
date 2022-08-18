@@ -7,14 +7,15 @@ void getCoef(float * u, float * v, float * d);
 void linear(float b, float c, float * u);
 void quadratic(float a, float b, float c, float * u, float * v, int * d);
 void printAnsw(float answ1, float answ2, int option);
-void solver(float a, float b, float c);
+void solver(float a, float b, float c, float*ans1, float*ans2, int*u);
 bool isEqual(float num1, float num2);
 
 
 int main(int args, char * argv[])
 {
 
-    float a = 0.0, b = 0.0, c = 0.0;
+    float a = 0.0, b = 0.0, c = 0.0, answ1 = 0.0, answ2 = 0.0;
+    int option = 0;
 
     FILE *pIn = NULL;
 
@@ -23,27 +24,30 @@ int main(int args, char * argv[])
     printf("Enter quadratic equation coefficients a, b, c: \n");
 
 
-        int testCount = 0;
+    int testCount = 0;
 
-        if ((pIn = fopen("tests.txt", "r")) == NULL) {
-            printf("can't open file\n");
-            return 0;
+    if ((pIn = fopen("tests.txt", "r")) == NULL) {
+        printf("can't open file\n");
+        return 0;
 
-        } else {
+    } else {
         printf("file is opened\n");
-        }
+    }
 
     fscanf(pIn, "%d", &testCount);
     printf("%d\n", testCount);
 
     for (int i = 0; i < testCount; i++) {
         fscanf(pIn, "%f %f %f", &a, &b, &c);
-        solver(a, b, c);
+        solver(a, b, c, &answ1, &answ2, &option);
+        printAnsw(answ1, answ2, option);
         printf("*********************\n");
 
     }
     fclose(pIn);
     //getCoef(&a, &b, &c);
+
+
 
 
     printf("Hope that you are satisfied\n");
