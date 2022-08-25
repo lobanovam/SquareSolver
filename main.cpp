@@ -21,10 +21,8 @@ run tests from "tests.txt" file (first 3 numbers in each line of this file are c
     @param a coefficient a
     @param b coefficient b
     @param c coefficient c
-    @param answ1 solution 1
-    @param answ2 solution 2
     @param rootcnt number of roots
-    @param choice input/tests mode (1 or 2)
+    @param choice input/tests mode (1, 2 or 3)
     @param res1 expected solution 1
     @param res2 expected solution 2
     @param testCount number of tests
@@ -32,66 +30,81 @@ run tests from "tests.txt" file (first 3 numbers in each line of this file are c
 
 */
 enum choice {
-    user_input = 1,
+    quadratic_mode = 1,
+    linear_mode,
     test_mode
 };
 
 int main()
 {
+    float arr[10] = {0};
 
-    float a = NAN, b = NAN, c = NAN, answ1 = NAN, answ2 = NAN;
-
-    int rootcnt = 0, choice = 0;
+    int rootcnt = 0, choice = 0, coef_cnt = 0;
 
     printf("This program solves the equations of this type: a*x^2 + b*x + c = 0\n");
-    printf("press 1 to input coefficients yourself, press 2 to run tests\n");
+    printf("press 1 to quadr, press 2 to linear, press 3 to tests\n");
 
-    while (scanf("%d", &choice) != 1 || choice != user_input && choice != test_mode) { /**@brief choosing the mode (1 or 2)*/
-        printf("please press 1 or 2\n");
+    while (scanf("%d", &choice) != 1 ||
+        choice != quadratic_mode && choice != linear_mode && choice != test_mode) { /**@brief choosing the mode (1, 2 or 3)*/
+        printf("please press 1, 2 or 3\n");
         clearBuff();
     }
     clearBuff();
-
-    if (choice == user_input) {    /** engage user input*/
-        getCoef(&a, &b, &c);
-        solver(a, b, c, &answ1, &answ2, &rootcnt);
-        printAnsw(answ1, answ2, rootcnt);
+    if (choice == test_mode) {
+        tests();
     } else {
-        tests(); /**run tests*/
+        switch(choice) {
+            case(quadratic_mode): coef_cnt = 3;
+                    printf("please enter 3 coeffs\n");
+                    getCoef(arr, coef_cnt);
+                    quadratic(arr, &rootcnt);
+                    break;
+            case(linear_mode): coef_cnt = 2;
+                    printf("please enter 2 coeffs\n");
+                    getCoef(arr, coef_cnt);
+                    linear(arr, &rootcnt);
+                    break;
+        }
+
+        printAnsw(arr, rootcnt);
     }
     printf("Hope that you are satisfied\n");
+
     return 0;
 }
 
-void printAnsw(float answ1, float answ2, int rootcnt)
+void printAnsw(const float *s, int rootcnt)
 {
     switch(rootcnt) {
         case 0: printf("there are no real solutions\n");
             break;
 
-        case 1: printf("there is only one solution, it is %f\n", answ1);
+        case 1:
+            printf("there is only one solution, it is %f\n", *(s+3));
             break;
 
         case INF_ROOTS: printf("there are an infinite number of solutions\n");
             break;
 
-        case 2: if (isEqual(answ1, answ2)) {
-                    printf("one solution: %f\n", answ1);
+        case 2: if (isEqual(*(s+3), *(s+4))) {
+                    printf("one solution: %f\n", *(s+3));
                 } else {
-                    printf("first solution is %f, second is %f\n", answ1, answ2);
+                    printf("first solution is %f, second is %f\n", *(s+3), *(s+4));
                 }
     }
 
 }
 
-void getCoef(float *a, float *b, float *c)
+void getCoef(float *a, int coef_cnt)
 {
-    printf("Enter quadratic equation coefficients a, b, c: \n");
+    for (int i = 0; i < coef_cnt; i++) {
+            while (scanf("%f", a+i) != 1) {
+                printf("please enter a float\n");
+                clearBuff();
+            }
+        }
 
-    while (scanf("%f %f %f", a, b, c) != 3) {
-        printf("incorrect enter, try again\n");
         clearBuff();
-    }
 }
 
 void tester(float answ1, float answ2, float res1, float res2, int i)
@@ -110,8 +123,8 @@ void tester(float answ1, float answ2, float res1, float res2, int i)
     }
 }
 
-void tests() {
-    float a = NAN, b = NAN, c = NAN, answ1 = NAN, answ2 = NAN, res1 = NAN, res2 = NAN;
+ void tests() {
+    float res1 = NAN, res2 = NAN, arr[10] = {};
     int rootcnt = 0, rescnt = 0, testCount = 0;
 
     FILE *pIn = NULL;
@@ -126,7 +139,13 @@ void tests() {
     fprintf(stderr, "there are %d tests in total\n\n", testCount);
 
     for (int i = 0; i < testCount; i++) {
-        fscanf(pIn,"%f %f %f %d", &a, &b, &c, &rescnt);
+
+        for (int j = 0; j < 3; j++) {
+            while (fscanf(pIn, "%f", &arr[j]) != 1) {
+                clearBuff();
+            }
+        }
+        fscanf(pIn, "%d", &rescnt);
 
         if (rescnt == 0) {
             res1 = res2 = 0;
@@ -139,9 +158,9 @@ void tests() {
             fscanf(pIn, "%f %f", &res1, &res2);
         }
 
-        solver(a, b, c, &answ1, &answ2, &rootcnt);
-        printAnsw(answ1, answ2, rootcnt);
-        tester(answ1, answ2, res1, res2, i);
+        quadratic(arr, &rootcnt);
+        printAnsw(arr, rootcnt);
+        tester(arr[3], arr[4], res1, res2, i);
 
         printf("***********************\n");
 

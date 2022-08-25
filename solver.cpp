@@ -8,49 +8,49 @@
 const double EPSILON = 1E-7;
 
 
-void quadratic(float a, float b, float c, float *answ1_pt , float *answ2_pt, int *rootcnt_pt)
+void quadratic(float *s, int *rootcnt_pt)
 {
-    ASSERT(answ1_pt != nullptr);
-    ASSERT(answ2_pt != nullptr);
+    ASSERT(s != nullptr);
     ASSERT(rootcnt_pt != nullptr);
-    ASSERT(answ1_pt != answ2_pt);
-    ASSERT(a != NAN);
-    ASSERT(b != NAN);
-    ASSERT(c != NAN);
-    ASSERT(!isEqual(a, 0));
 
-    float disc = b*b - 4*a*c;
-    if (disc < 0) {
-        fprintf(stderr, "disc < 0\n");
-        *rootcnt_pt = 0;
-        *answ1_pt = *answ2_pt = 0;
+    float a = *s;
+    float b = *(s+1);
+    float c = *(s+2);
 
-    } else if (isEqual(disc, 0)) {
-        fprintf(stderr, "disc = 0\n");
-        *answ1_pt = *answ2_pt = (-b / (2*a));
-        *rootcnt_pt = 1;
+    if (isEqual(*s, 0)) {
+            linear(s+1, rootcnt_pt);
+            *(s+3) = *(s+4);
 
     } else {
-        float sqrt_disc = sqrt(disc);
-        fprintf(stderr, "disc > 0\n");
-        *answ1_pt = (-b + sqrt_disc) / (2*a);
-        *answ2_pt = (-b - sqrt_disc) / (2*a);
-        *rootcnt_pt = 2;
+        float disc = b*b - 4*a*c;
+
+        if (disc < 0) {
+            fprintf(stderr, "disc < 0\n");
+            *rootcnt_pt = 0;
+            *(s+3) = *(s+4) = 0;
+
+        } else if (isEqual(disc, 0)) {
+            fprintf(stderr, "disc = 0\n");
+            *(s+3) = *(s+4) = -b / (2*a);
+            *rootcnt_pt = 1;
+
+        } else {
+            float sqrt_disc = sqrt(disc);
+            fprintf(stderr, "disc > 0\n");
+            *(s+3) = (-b + sqrt_disc) / (2*a);
+            *(s+4) = (-b - sqrt_disc) / (2*a);
+            *rootcnt_pt = 2;
+        }
     }
 }
 
-void solver(float a, float b, float c, float *answ1_pt, float *answ2_pt, int *rootcnt_pt )
+void linear(float *s, int *rootcnt_pt)
 {
-    if (isEqual(a, 0)) {
-        linear(b, c, answ1_pt, rootcnt_pt);
-        *answ2_pt = *answ1_pt;
-    } else {
-        quadratic(a, b, c, answ1_pt, answ2_pt, rootcnt_pt);
-    }
-}
+    ASSERT(s != nullptr);
+    ASSERT(rootcnt_pt != nullptr);
+    float b = *s;           /**bx + c = 0 */
+    float c = *(s+1);
 
-void linear(float b, float c, float *answ1_pt, int *rootcnt_pt)
-{
     if (isEqual(b, 0)) {
         fprintf(stderr, "nonlinear\n");
 
@@ -63,7 +63,7 @@ void linear(float b, float c, float *answ1_pt, int *rootcnt_pt)
     } else {
         fprintf(stderr, "linear\n");
         *rootcnt_pt = 1;
-        *answ1_pt = -c / b;
+        *(s+3) = *(s+4) = -c / b;
     }
 }
 
